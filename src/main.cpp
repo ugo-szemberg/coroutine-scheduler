@@ -1,18 +1,6 @@
 ﻿#include "task.h"
 #include <iostream>
 
-bool can = false;
-
-Task Test()
-{
-    std::cout << "bool false\n";
-    co_await BoolCondition(can, true);
-    std::cout << "bool true\n";
-    std::cout << "timer started\n";
-    co_await Timer(1000);
-    std::cout << "timer finished\n";
-}
-
 class Application
 {
 public:
@@ -25,6 +13,7 @@ public:
 
     bool ShouldClose()
     {
+        ++frame;
         auto stop = Clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(stop - start);
 
@@ -36,27 +25,30 @@ public:
         return false;
     }
 
+    int GetFrame() { return frame; }
+
 private:
     int time = 0;
+    int frame = 0;
     Clock::time_point start;
 };
 
+Task Test(bool& b, int time)
+{
+    co_await BoolCondition(b, true);
+    co_await Timer(time);
+    co_await NextFrame();
+}
+
 int main()
 {
-    Application application(1000);
+    Application app(4000);
+    bool b;
+    Test(b, 1000);
 
-    Test();
-
-    while (!application.ShouldClose())
+    while (!app.ShouldClose())
     {
+        b = true;
         Scheduler::GetInstance().Update();
     }
-    can = true;
-    Application application2(2000);
-
-    while (!application2.ShouldClose())
-    {
-        Scheduler::GetInstance().Update();
-    }
-    can = false;
 }

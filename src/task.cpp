@@ -41,6 +41,15 @@ void Scheduler::UpdateConditionTasks()
     }
 }
 
+void Scheduler::UpdateNextFrameTasks()
+{
+    for (auto it = nextFrameTasks.begin(); it != nextFrameTasks.end(); ++it)
+    {
+        tasksToResume.push_back(*it);
+    }
+    nextFrameTasks.clear();
+}
+
 Scheduler& Scheduler::GetInstance()
 {
     static Scheduler scheduler;
@@ -63,8 +72,26 @@ void Scheduler::AddBoolConditionTask(bool* varToCheck, bool expectedValue, std::
     boolConditionTasks.push_back(cb);
 }
 
+void Scheduler::AddNextFrameTask(std::coroutine_handle<> task)
+{
+    nextFrameTasks.push_back(task);
+}
+
 void Scheduler::Update()
 {
     UpdateTimerTasks();
     UpdateConditionTasks();
+
+    Resume();
+
+    UpdateNextFrameTasks();
+}
+
+void Scheduler::Resume()
+{
+    for (auto it = tasksToResume.begin(); it != tasksToResume.end(); ++it)
+    {
+        it->resume();
+    }
+    tasksToResume.clear();
 }

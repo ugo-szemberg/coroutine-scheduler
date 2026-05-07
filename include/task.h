@@ -13,11 +13,11 @@ public:
 
     void AddTimerTask(Clock::time_point time, std::coroutine_handle<> task);
     void AddBoolConditionTask(bool* varToCheck, bool expectedValue, std::coroutine_handle<> task);
+    void AddNextFrameTask(std::coroutine_handle<> task);
     void Update();
+    void Resume();
 
 private:
-    std::vector<std::pair<Clock::time_point, std::coroutine_handle<>>> timerTasks;
-
     struct BooleanCondition
     {
         bool* varToCheck = nullptr;
@@ -25,13 +25,19 @@ private:
         std::coroutine_handle<> task;
     };
 
+    std::vector<std::pair<Clock::time_point, std::coroutine_handle<>>> timerTasks;
     std::vector<BooleanCondition> boolConditionTasks;
+    std::vector<std::coroutine_handle<>> nextFrameTasks;
+
+    std::vector<std::coroutine_handle<>> tasksToResume;
+
 
     Scheduler() = default;
     ~Scheduler();
 
     void UpdateTimerTasks();
     void UpdateConditionTasks();
+    void UpdateNextFrameTasks();
 };
 
 struct Task
@@ -88,6 +94,18 @@ struct BoolCondition
     void await_suspend(std::coroutine_handle<> handle) const
     {
         Scheduler::GetInstance().AddBoolConditionTask(varToCheck, expectedValue, handle);
+    }
+    void await_resume() const {}
+};
+
+struct NextFrame
+{
+    NextFrame() = default;
+
+    bool await_ready() const { return false; }
+    void await_suspend(std::coroutine_handle<> h) const
+    {
+        Scheduler::GetInstance().AddNextFrameTask(h);
     }
     void await_resume() const {}
 };
