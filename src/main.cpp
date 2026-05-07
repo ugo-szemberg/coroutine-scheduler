@@ -1,11 +1,20 @@
 ﻿#include "task.h"
 #include <iostream>
 
-Task run()
+bool can = false;
+
+Task TestTimer()
 {
-    std::cout << "Starting timer...\n";
+    std::cout << "starting timer\n";
     co_await Timer(1000);
-    std::cout << "Timer finished.\n";
+    std::cout << "timer finished\n";
+}
+
+Task TestCondition()
+{
+    std::cout << "bool false\n";
+    co_await BoolCondition(can, true);
+    std::cout << "bool true\n";
 }
 
 class Application
@@ -38,11 +47,19 @@ private:
 
 int main()
 {
-    run();
+    //TestTimer();
+    TestCondition();
 
-    Application application(2000);
+    Application application(1000);
 
     while (!application.ShouldClose())
+    {
+        Scheduler::GetInstance().Update();
+    }
+    can = true;
+    Application application2(1000);
+
+    while (!application2.ShouldClose())
     {
         Scheduler::GetInstance().Update();
     }

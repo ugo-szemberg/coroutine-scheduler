@@ -11,14 +11,27 @@ class Scheduler
 public:
     static Scheduler& GetInstance();
 
-    void AddTask(Clock::time_point time, std::coroutine_handle<> task);
+    void AddTimerTask(Clock::time_point time, std::coroutine_handle<> task);
+    void AddBoolConditionTask(bool* varToCheck, bool expectedValue, std::coroutine_handle<> task);
     void Update();
 
 private:
-    std::vector<std::pair<Clock::time_point, std::coroutine_handle<>>> tasks;
+    std::vector<std::pair<Clock::time_point, std::coroutine_handle<>>> timerTasks;
+
+    struct BooleanCondition
+    {
+        bool* varToCheck = nullptr;
+        bool expectedValue = false;
+        std::coroutine_handle<> task;
+    };
+
+    std::vector<BooleanCondition> boolConditionTasks;
 
     Scheduler() = default;
     ~Scheduler();
+
+    void UpdateTimerTasks();
+    void UpdateConditionTasks();
 };
 
 struct Task
@@ -55,7 +68,26 @@ struct Timer
     void await_suspend(std::coroutine_handle<> h) const
     {
         Clock::time_point d = Clock::now() + duration;
-        Scheduler::GetInstance().AddTask(d, h);
+        Scheduler::GetInstance().AddTimerTask(d, h);
+    }
+    void await_resume() const {}
+};
+
+struct BoolCondition
+{
+    bool* varToCheck = nullptr;
+    bool expectedValue = false;
+
+    BoolCondition(bool& _varToCheck, bool _expectedValue)
+    {
+        varToCheck = &_varToCheck;
+        expectedValue = _expectedValue;
+    }
+
+    bool await_ready() const { return false; }
+    void await_suspend(std::coroutine_handle<> handle) const
+    {
+        Scheduler::GetInstance().AddBoolConditionTask(varToCheck, expectedValue, handle);
     }
     void await_resume() const {}
 };
