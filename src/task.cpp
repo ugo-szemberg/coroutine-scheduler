@@ -20,7 +20,7 @@ void Scheduler::UpdateTimerTasks()
         if (now >= it->first)
         {
             it->second.resume();
-            timerTasks.erase(it);
+            it = timerTasks.erase(it);
             continue;
         }
         ++it;

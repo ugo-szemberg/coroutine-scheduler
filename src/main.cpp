@@ -3,18 +3,14 @@
 
 bool can = false;
 
-Task TestTimer()
-{
-    std::cout << "starting timer\n";
-    co_await Timer(1000);
-    std::cout << "timer finished\n";
-}
-
-Task TestCondition()
+Task Test()
 {
     std::cout << "bool false\n";
     co_await BoolCondition(can, true);
     std::cout << "bool true\n";
+    std::cout << "timer started\n";
+    co_await Timer(1000);
+    std::cout << "timer finished\n";
 }
 
 class Application
@@ -47,20 +43,20 @@ private:
 
 int main()
 {
-    //TestTimer();
-    TestCondition();
-
     Application application(1000);
+
+    Test();
 
     while (!application.ShouldClose())
     {
         Scheduler::GetInstance().Update();
     }
     can = true;
-    Application application2(1000);
+    Application application2(2000);
 
     while (!application2.ShouldClose())
     {
         Scheduler::GetInstance().Update();
     }
+    can = false;
 }
