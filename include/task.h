@@ -15,7 +15,6 @@ public:
     void AddBoolConditionTask(bool* varToCheck, bool expectedValue, std::coroutine_handle<> task);
     void AddNextFrameTask(std::coroutine_handle<> task);
     void Update();
-    void Resume();
 
 private:
     struct BooleanCondition
@@ -35,6 +34,7 @@ private:
     Scheduler() = default;
     ~Scheduler();
 
+    void ResumeTasks();
     void UpdateTimerTasks();
     void UpdateConditionTasks();
     void UpdateNextFrameTasks();

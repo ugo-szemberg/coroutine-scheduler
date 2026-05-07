@@ -19,7 +19,7 @@ void Scheduler::UpdateTimerTasks()
     {
         if (now >= it->first)
         {
-            it->second.resume();
+            tasksToResume.push_back(it->second);
             it = timerTasks.erase(it);
             continue;
         }
@@ -33,7 +33,7 @@ void Scheduler::UpdateConditionTasks()
     {
         if (*it->varToCheck == it->expectedValue)
         {
-            it->task.resume();
+            tasksToResume.push_back(it->task);
             it = boolConditionTasks.erase(it);
             continue;
         }
@@ -82,12 +82,12 @@ void Scheduler::Update()
     UpdateTimerTasks();
     UpdateConditionTasks();
 
-    Resume();
+    ResumeTasks();
 
     UpdateNextFrameTasks();
 }
 
-void Scheduler::Resume()
+void Scheduler::ResumeTasks()
 {
     for (auto it = tasksToResume.begin(); it != tasksToResume.end(); ++it)
     {

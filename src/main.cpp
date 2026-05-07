@@ -43,12 +43,12 @@ Task Test(bool& b, int time)
 int main()
 {
     Application app(4000);
-    bool b;
-    Test(b, 1000);
+    bool loopStarted;
+    Test(loopStarted, 300);
 
     while (!app.ShouldClose())
     {
-        b = true;
+        loopStarted = true;
         Scheduler::GetInstance().Update();
     }
 }
